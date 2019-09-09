@@ -2,7 +2,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 
 #[derive(Debug)]
-struct BinaryTreeNode {
+pub struct BinaryTreeNode {
     pub value: i32,
     pub left: Option<Rc<RefCell<BinaryTreeNode>>>,
     pub right: Option<Rc<RefCell<BinaryTreeNode>>>,
@@ -51,10 +51,4 @@ impl BinaryTreeNode {
 
         tree_node
     }
-}
-
-fn main() {
-    let nodes = vec![Some(1), None, Some(2), Some(3)];
-    let node_tree = BinaryTreeNode::generate_tree(nodes);
-    println!("{:?}", node_tree);
 }
