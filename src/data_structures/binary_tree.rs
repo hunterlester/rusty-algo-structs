@@ -4,51 +4,70 @@ use std::cell::RefCell;
 #[derive(Debug)]
 pub struct BinaryTreeNode {
     pub value: i32,
-    pub left: Option<Rc<RefCell<BinaryTreeNode>>>,
-    pub right: Option<Rc<RefCell<BinaryTreeNode>>>,
+    pub left: Option<Option<Rc<RefCell<BinaryTreeNode>>>>,
+    pub right: Option<Option<Rc<RefCell<BinaryTreeNode>>>>,
 }
 
 impl BinaryTreeNode {
-    fn new(value: i32) -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(BinaryTreeNode {
+    pub fn new(value: i32) -> Self {
+        BinaryTreeNode {
             value,
-            left: None,
-            right: None,
-        }))
+            left: Some(None),
+            right: Some(None),
+        }
     }
 
-    pub fn generate_tree(mut node_values: Vec<Option<i32>>) -> Rc<RefCell<Self>> {
-        node_values.reverse();
-        let tree_node: Rc<RefCell<BinaryTreeNode>> = BinaryTreeNode::new(node_values.pop().unwrap().unwrap());
-        let mut stack: Vec<Rc<RefCell<BinaryTreeNode>>> = Vec::new();
-        stack.push(Rc::clone(&tree_node));
-
-        loop {
-            if node_values.len() == 0 {
-                break;
-            }
-            let mut leaves = Vec::new();
-            for node in &stack {
-                if let Some(Some(v)) = node_values.pop() {
-                    let child_node = BinaryTreeNode::new(v);
-                    node.borrow_mut().left = Some(Rc::clone(&child_node));
-                    leaves.push(Rc::clone(&child_node));
-                } else {
-                    node.borrow_mut().left = None;
+    fn insert_left(&mut self, value: Option<i32>) -> () {
+        if let Some(outer_option_value) = self.left.as_ref() {
+            if let Some(node_value) = outer_option_value {
+                match self.right.as_ref() {
+                    Some(Some(_v)) => {
+                      node_value.borrow_mut().insert(value);
+                    },
+                    Some(None) => {
+                      self.insert_right(value)
+                    },
+                    None => {
+                      node_value.borrow_mut().insert(value);
+                    },
                 }
-
-                if let Some(Some(v)) = node_values.pop() {
-                    let child_node = BinaryTreeNode::new(v);
-                    node.borrow_mut().right = Some(Rc::clone(&child_node));
-                    leaves.push(Rc::clone(&child_node));
+            } else {
+                if let Some(integer) = value {
+                  self.left = Some(Some(Rc::new(RefCell::new(BinaryTreeNode::new(integer)))));
                 } else {
-                    node.borrow_mut().right = None;
+                  self.left = None;
                 }
             }
-            stack.clear();
-            stack.append(&mut leaves);
+        } else {
+            self.insert_right(value);
         }
+    }
 
-        tree_node
+    fn insert_right(&mut self, value: Option<i32>) -> () {
+          if let Some(outer_option_value) = self.right.as_ref() {
+              if let Some(node_value) = outer_option_value {
+                  node_value.borrow_mut().insert(value);
+              } else {
+                  if let Some(integer) = value {
+                    self.right = Some(Some(Rc::new(RefCell::new(BinaryTreeNode::new(integer)))));
+                  } else {
+                    self.right = None;
+                  }
+              }
+          } else {
+            self.insert_left(value);
+          }
+    }
+
+    pub fn insert(&mut self, value: Option<i32>) -> () {
+        if let None = self.left.as_ref() {
+          if let None = self.right.as_ref() {
+            ()
+          } else {
+            self.insert_left(value);
+          }
+        } else {
+          self.insert_left(value);
+        }
     }
 }
