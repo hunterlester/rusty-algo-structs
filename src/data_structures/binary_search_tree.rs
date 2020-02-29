@@ -55,7 +55,7 @@ impl BST {
         }
     }
 
-    fn traverse_left(&self) -> Vec<i32> {
+    fn inorder_traverse_left(&self) -> Vec<i32> {
         if let Some(Some(node)) = self.left.as_ref() {
             node.borrow().inorder_traverse()
         } else {
@@ -63,7 +63,7 @@ impl BST {
         }
     }
 
-    fn traverse_right(&self) -> Vec<i32> {
+    fn inorder_traverse_right(&self) -> Vec<i32> {
         if let Some(Some(node)) = self.right.as_ref() {
             node.borrow().inorder_traverse()
         } else {
@@ -72,7 +72,47 @@ impl BST {
     }
 
     pub fn inorder_traverse(&self) -> Vec<i32> {
-        vec![self.traverse_left(), vec![self.value], self.traverse_right()].concat()
+        vec![self.inorder_traverse_left(), vec![self.value], self.inorder_traverse_right()].concat()
+    }
+
+    fn preorder_traverse_left(&self) -> Vec<i32> {
+        if let Some(Some(node)) = self.left.as_ref() {
+            node.borrow().preorder_traverse()
+        } else {
+            vec![]
+        }
+    }
+
+    fn preorder_traverse_right(&self) -> Vec<i32> {
+        if let Some(Some(node)) = self.right.as_ref() {
+            node.borrow().preorder_traverse()
+        } else {
+            vec![]
+        }
+    }
+
+    pub fn preorder_traverse(&self) -> Vec<i32> {
+        vec![vec![self.value], self.preorder_traverse_left(), self.preorder_traverse_right()].concat()
+    }
+
+    fn postorder_traverse_left(&self) -> Vec<i32> {
+        if let Some(Some(node)) = self.left.as_ref() {
+            node.borrow().postorder_traverse()
+        } else {
+            vec![]
+        }
+    }
+
+    fn postorder_traverse_right(&self) -> Vec<i32> {
+        if let Some(Some(node)) = self.right.as_ref() {
+            node.borrow().postorder_traverse()
+        } else {
+            vec![]
+        }
+    }
+
+    pub fn postorder_traverse(&self) -> Vec<i32> {
+        vec![self.postorder_traverse_left(), self.postorder_traverse_right(), vec![self.value]].concat()
     }
 }
 
@@ -133,6 +173,10 @@ mod tests {
         }
     }
 
+//            10
+//        9        29
+//    7         19
+
     #[test]
     fn inorder_traverse() {
         let mut bst = BST::new(10);
@@ -140,7 +184,26 @@ mod tests {
         bst.insert(9);
         bst.insert(7);
         bst.insert(19);
-        println!("{:?}", bst.inorder_traverse());
-        assert_eq!(bst.inorder_traverse(), vec![7, 9, 10, 19, 29])
+        assert_eq!(bst.inorder_traverse(), vec![7, 9, 10, 19, 29]);
+    }
+
+    #[test]
+    fn preorder_traverse() {
+        let mut bst = BST::new(10);
+        bst.insert(29);
+        bst.insert(9);
+        bst.insert(7);
+        bst.insert(19);
+        assert_eq!(bst.preorder_traverse(), vec![10, 9, 7, 29, 19]);
+    }
+
+    #[test]
+    fn postorder_traverse() {
+        let mut bst = BST::new(10);
+        bst.insert(29);
+        bst.insert(9);
+        bst.insert(7);
+        bst.insert(19);
+        assert_eq!(bst.postorder_traverse(), vec![7, 9, 19, 29, 10]);
     }
 }
