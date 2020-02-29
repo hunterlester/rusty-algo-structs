@@ -54,6 +54,26 @@ impl BST {
             self.insert_right(value);
         }
     }
+
+    fn traverse_left(&self) -> Vec<i32> {
+        if let Some(Some(node)) = self.left.as_ref() {
+            node.borrow().inorder_traverse()
+        } else {
+            vec![]
+        }
+    }
+
+    fn traverse_right(&self) -> Vec<i32> {
+        if let Some(Some(node)) = self.right.as_ref() {
+            node.borrow().inorder_traverse()
+        } else {
+            vec![]
+        }
+    }
+
+    pub fn inorder_traverse(&self) -> Vec<i32> {
+        vec![self.traverse_left(), vec![self.value], self.traverse_right()].concat()
+    }
 }
 
 #[cfg(test)]
@@ -111,5 +131,16 @@ mod tests {
         if let Some(Some(node)) = bst.right.as_ref() {
             assert_eq!(node.borrow().count, 3);
         }
+    }
+
+    #[test]
+    fn inorder_traverse() {
+        let mut bst = BST::new(10);
+        bst.insert(29);
+        bst.insert(9);
+        bst.insert(7);
+        bst.insert(19);
+        println!("{:?}", bst.inorder_traverse());
+        assert_eq!(bst.inorder_traverse(), vec![7, 9, 10, 19, 29])
     }
 }
