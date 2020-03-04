@@ -3,7 +3,7 @@ use std::cell::RefCell;
 
 type PotentialNode = Option<Rc<RefCell<BST>>>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BST {
     value: i32,
     left: PotentialNode,
@@ -115,10 +115,10 @@ impl BST {
         vec![self.postorder_traverse_left(), self.postorder_traverse_right(), vec![self.value]].concat()
     }
 
-    pub fn inorder_iterate(self) -> Vec<i32> {
+    pub fn inorder_iterate(&self) -> Vec<i32> {
         let mut stack: Vec<Rc<RefCell<BST>>> = Vec::new();
         let mut inorder = Vec::new();
-        let mut current_node = Some(Rc::new(RefCell::new(self)));
+        let mut current_node = Some(Rc::new(RefCell::new(self.clone())));
         loop {
             let stack_has_len = stack.len() != 0;
             let some_current_node = match &current_node {
