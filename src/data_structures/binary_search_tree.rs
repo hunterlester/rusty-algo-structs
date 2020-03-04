@@ -1,11 +1,13 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 
+type PotentialNode = Option<Rc<RefCell<BST>>>;
+
 #[derive(Debug)]
 pub struct BST {
     value: i32,
-    left: Option<Option<Rc<RefCell<BST>>>>,
-    right: Option<Option<Rc<RefCell<BST>>>>,
+    left: PotentialNode,
+    right: PotentialNode,
     count: i32,
 }
 
@@ -13,33 +15,31 @@ impl BST {
     pub fn new(value: i32) -> Self {
         BST {
             value,
-            left: Some(None),
-            right: Some(None),
+            left: None,
+            right: None,
             count: 1,
         }
     }
 
     fn insert_left(&mut self, value: i32) -> () {
         match self.left.as_ref() {
-            Some(Some(node)) => {
+            Some(node) => {
                 node.borrow_mut().insert(value);
             },
-            Some(None) => {
-                self.left = Some(Some(Rc::new(RefCell::new(BST::new(value)))));
+            None => {
+                self.left = Some(Rc::new(RefCell::new(BST::new(value))));
             },
-            None => (),
         };
     }
 
     fn insert_right(&mut self, value: i32) -> () {
         match self.right.as_ref() {
-            Some(Some(node)) => {
+            Some(node) => {
                 node.borrow_mut().insert(value);
             },
-            Some(None) => {
-                self.right = Some(Some(Rc::new(RefCell::new(BST::new(value)))));
+            None => {
+                self.right = Some(Rc::new(RefCell::new(BST::new(value))));
             },
-            None => (),
         };
     }
 
@@ -56,7 +56,7 @@ impl BST {
     }
 
     fn inorder_traverse_left(&self) -> Vec<i32> {
-        if let Some(Some(node)) = self.left.as_ref() {
+        if let Some(node) = self.left.as_ref() {
             node.borrow().inorder_traverse()
         } else {
             vec![]
@@ -64,7 +64,7 @@ impl BST {
     }
 
     fn inorder_traverse_right(&self) -> Vec<i32> {
-        if let Some(Some(node)) = self.right.as_ref() {
+        if let Some(node) = self.right.as_ref() {
             node.borrow().inorder_traverse()
         } else {
             vec![]
@@ -76,7 +76,7 @@ impl BST {
     }
 
     fn preorder_traverse_left(&self) -> Vec<i32> {
-        if let Some(Some(node)) = self.left.as_ref() {
+        if let Some(node) = self.left.as_ref() {
             node.borrow().preorder_traverse()
         } else {
             vec![]
@@ -84,7 +84,7 @@ impl BST {
     }
 
     fn preorder_traverse_right(&self) -> Vec<i32> {
-        if let Some(Some(node)) = self.right.as_ref() {
+        if let Some(node) = self.right.as_ref() {
             node.borrow().preorder_traverse()
         } else {
             vec![]
@@ -96,7 +96,7 @@ impl BST {
     }
 
     fn postorder_traverse_left(&self) -> Vec<i32> {
-        if let Some(Some(node)) = self.left.as_ref() {
+        if let Some(node) = self.left.as_ref() {
             node.borrow().postorder_traverse()
         } else {
             vec![]
@@ -104,7 +104,7 @@ impl BST {
     }
 
     fn postorder_traverse_right(&self) -> Vec<i32> {
-        if let Some(Some(node)) = self.right.as_ref() {
+        if let Some(node) = self.right.as_ref() {
             node.borrow().postorder_traverse()
         } else {
             vec![]
@@ -113,6 +113,42 @@ impl BST {
 
     pub fn postorder_traverse(&self) -> Vec<i32> {
         vec![self.postorder_traverse_left(), self.postorder_traverse_right(), vec![self.value]].concat()
+    }
+
+    pub fn inorder_iterate(self) -> Vec<i32> {
+        let mut stack: Vec<Rc<RefCell<BST>>> = Vec::new();
+        let mut inorder = Vec::new();
+        let mut current_node = Some(Rc::new(RefCell::new(self)));
+        loop {
+            let stack_has_len = stack.len() != 0;
+            let some_current_node = match &current_node {
+                Some(_n) => true,
+                None => false,
+            };
+            if !stack_has_len && !some_current_node {
+                break;
+            }
+            if let Some(node) = current_node {
+                stack.push(Rc::clone(&node));
+                if let Some(n) = node.borrow().left.as_ref() {
+                  current_node = Some(Rc::clone(&n));
+                }  else {
+                    current_node = None;
+                }
+            } else {
+                if let Some(node) = stack.pop() {
+                    inorder.push(node.borrow().value);
+                    if let Some(n) = node.borrow().right.as_ref() {
+                      current_node = Some(Rc::clone(&n));
+                    }  else {
+                        current_node = None;
+                    }
+                } else {
+                    continue;
+                }
+            }
+        }
+        inorder
     }
 }
 
@@ -137,7 +173,7 @@ mod tests {
     fn bst_insert() {
         let mut bst = BST::new(1);
         bst.insert(2);
-        if let Some(Some(node)) = bst.right {
+        if let Some(node) = bst.right {
             assert_eq!(node.borrow().value, 2);
         }
     }
@@ -149,14 +185,14 @@ mod tests {
         bst.insert(9);
         bst.insert(7);
         bst.insert(19);
-        if let Some(Some(node)) = bst.left.as_ref() {
+        if let Some(node) = bst.left.as_ref() {
             assert_eq!(node.borrow().value, 9);
         }
-        if let Some(Some(node)) = bst.right.as_ref() {
+        if let Some(node) = bst.right.as_ref() {
             assert_eq!(node.borrow().value, 19);
         }
-        if let Some(Some(node)) = bst.left.as_ref() {
-            if let Some(Some(left_node)) = node.borrow().left.as_ref() {
+        if let Some(node) = bst.left.as_ref() {
+            if let Some(left_node) = node.borrow().left.as_ref() {
                 assert_eq!(left_node.borrow().value, 7);
             }
         }
@@ -168,14 +204,10 @@ mod tests {
         bst.insert(3);
         bst.insert(3);
         bst.insert(3);
-        if let Some(Some(node)) = bst.right.as_ref() {
+        if let Some(node) = bst.right.as_ref() {
             assert_eq!(node.borrow().count, 3);
         }
     }
-
-//            10
-//        9        29
-//    7         19
 
     #[test]
     fn inorder_traverse() {
@@ -205,5 +237,15 @@ mod tests {
         bst.insert(7);
         bst.insert(19);
         assert_eq!(bst.postorder_traverse(), vec![7, 9, 19, 29, 10]);
+    }
+
+    #[test]
+    fn inorder_iterate() {
+        let mut bst = BST::new(10);
+        bst.insert(29);
+        bst.insert(9);
+        bst.insert(7);
+        bst.insert(19);
+        assert_eq!(bst.inorder_iterate(), vec![7, 9, 10, 19, 29]);
     }
 }
