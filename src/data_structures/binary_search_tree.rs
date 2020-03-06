@@ -150,6 +150,93 @@ impl BST {
         }
         inorder
     }
+
+    pub fn preorder_iterate(&self) -> Vec<i32> {
+        let mut stack: Vec<Rc<RefCell<BST>>> = Vec::new();
+        let mut preorder = Vec::new();
+        let mut current_node = Some(Rc::new(RefCell::new(self.clone())));
+        loop {
+            let stack_has_len = stack.len() != 0;
+            let some_current_node = match &current_node {
+                Some(_n) => true,
+                None => false,
+            };
+            if !stack_has_len && !some_current_node {
+                break;
+            }
+            if let Some(node) = current_node {
+                preorder.push(node.borrow().value);
+                stack.push(Rc::clone(&node));
+                if let Some(n) = node.borrow().left.as_ref() {
+                  current_node = Some(Rc::clone(&n));
+                }  else {
+                    current_node = None;
+                }
+            } else {
+                if let Some(node) = stack.pop() {
+                    if let Some(n) = node.borrow().right.as_ref() {
+                      current_node = Some(Rc::clone(&n));
+                    }  else {
+                        current_node = None;
+                    }
+                } else {
+                    continue;
+                }
+            }
+        }
+        preorder
+    }
+
+    pub fn postorder_iterate(&self) -> Vec<i32> {
+        let mut left_stack: Vec<Rc<RefCell<BST>>> = Vec::new();
+        let mut right_stack: Vec<Rc<RefCell<BST>>> = Vec::new();
+        let mut postorder = Vec::new();
+        let mut current_node = Some(Rc::new(RefCell::new(self.clone())));
+        loop {
+            let stack_has_len = left_stack.len() != 0 || right_stack.len() != 0;
+            let some_current_node = match &current_node {
+                Some(_n) => true,
+                None => false,
+            };
+            if !stack_has_len && !some_current_node {
+                break;
+            }
+            if let Some(node) = current_node {
+                if right_stack.len() != 0 {
+                    right_stack.push(Rc::clone(&node));
+                } else {
+                    left_stack.push(Rc::clone(&node));
+                }
+                if let Some(n) = node.borrow().left.as_ref() {
+                  current_node = Some(Rc::clone(&n));
+                }  else {
+                    current_node = None;
+                }
+            } else {
+                let stack;
+                if right_stack.len() != 0 {
+                    stack = &mut right_stack;
+                } else {
+                    stack = &mut left_stack;
+                }
+                if let Some(node) = stack.pop() {
+                    if let Some(n) = node.borrow().right.as_ref() {
+                      right_stack.push(Rc::clone(&node));
+                      current_node = Some(Rc::clone(&n));
+                    }  else {
+                        postorder.push(node.borrow().value);
+                        while let Some(r_node) = right_stack.pop() {
+                            postorder.push(r_node.borrow().value);
+                        }
+                        current_node = None;
+                    }
+                } else {
+                    continue;
+                }
+            }
+        }
+        postorder
+    }
 }
 
 #[cfg(test)]
@@ -247,5 +334,28 @@ mod tests {
         bst.insert(7);
         bst.insert(19);
         assert_eq!(bst.inorder_iterate(), vec![7, 9, 10, 19, 29]);
+    }
+
+    #[test]
+    fn preorder_iterate() {
+        let mut bst = BST::new(10);
+        bst.insert(29);
+        bst.insert(9);
+        bst.insert(7);
+        bst.insert(19);
+        assert_eq!(bst.preorder_iterate(), vec![10, 9, 7, 29, 19]);
+    }
+
+    #[test]
+    fn postorder_iterate() {
+        let mut bst = BST::new(10);
+        bst.insert(29);
+        bst.insert(9);
+        bst.insert(7);
+        bst.insert(19);
+        bst.insert(5);
+        bst.insert(8);
+        bst.insert(1);
+        assert_eq!(bst.postorder_iterate(), vec![1, 5, 8, 7, 9, 19, 29, 10]);
     }
 }
