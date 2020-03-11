@@ -237,6 +237,21 @@ impl BST {
         }
         postorder
     }
+
+    pub fn delete(&mut self, id: i32) -> () {
+        let mut preorder: Vec<i32> = self.preorder_iterate().iter().filter_map(|value| {
+            if *value != id {
+                Some(*value)
+            } else {
+                None
+            }
+        }).collect();
+        let mut bst = BST::new(preorder.remove(0));
+        for node_value in preorder {
+            bst.insert(node_value);
+        }
+        *self = bst;
+    }
 }
 
 #[cfg(test)]
@@ -357,5 +372,16 @@ mod tests {
         bst.insert(8);
         bst.insert(1);
         assert_eq!(bst.postorder_iterate(), vec![1, 5, 8, 7, 9, 19, 29, 10]);
+    }
+
+    #[test]
+    fn delete() {
+        let mut bst = BST::new(10);
+        bst.insert(29);
+        bst.insert(9);
+        bst.insert(7);
+        bst.insert(19);
+        bst.delete(9);
+        assert_eq!(bst.preorder_iterate(), vec![10, 7, 29, 19]);
     }
 }
