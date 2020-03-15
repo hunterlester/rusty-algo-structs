@@ -10,5 +10,5 @@ edition = "2018"
 criterion = "0.3"
 
 [[bench]]
-name = "bst_benchmark"
+name = "main_benchmark"
 harness = false

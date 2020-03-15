@@ -1,4 +1,4 @@
-use criterion::{Criterion, BenchmarkId, criterion_group, criterion_main};
+use criterion::{Criterion, BenchmarkId};
 use rusty_algo_structs::data_structures::{BinarySearchTree, IterativeBinarySearchTree};
 
 pub fn bst_benches(c: &mut Criterion) {
@@ -13,6 +13,3 @@ pub fn bst_benches(c: &mut Criterion) {
     group.bench_with_input(BenchmarkId::new("Iterative", 2), &2, |b, _| b.iter(|| bst_iter.inorder()));
     group.finish();
 }
-
-criterion_group!(benches, bst_benches);
-criterion_main!(benches);
