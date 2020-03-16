@@ -22,32 +22,37 @@ impl IterativeBinarySearchTree {
     }
 
 
-    // pub fn insert_iterate(&self, value: i32) -> () {
+    // pub fn insert_iterate(&self, new_value: i32) -> () {
     //     let mut node_index = Rc::new(RefCell::new(self.clone()));
 
     //     loop {
-    //         if value == Rc::clone(&node_index).borrow().value {
-    //             Rc::clone(&node_index).borrow_mut().count += 1;
+    //         let IterativeBinarySearchTree { value, left, right, mut count } = &*node_index.borrow_mut();
+    //         let next_node: Rc<RefCell<IterativeBinarySearchTree>>;
+    //         if new_value == *value {
+    //             count += 1;
     //             break;
-    //         } else if value < Rc::clone(&node_index).borrow_mut().value {
-    //             match Rc::clone(&node_index).borrow_mut().left.as_ref() {
+    //         } else if new_value < *value {
+    //             match left.as_ref() {
     //                 Some(node) => {
-    //                     node_index = Rc::clone(&node);
+    //                     next_node = Rc::clone(&node);
     //                 },
     //                 None => {
-    //                     Rc::clone(&node_index).borrow_mut().left = Some(Rc::new(RefCell::new(IterativeBinarySearchTree::new(value))));
+    //                     left = &Some(Rc::new(RefCell::new(IterativeBinarySearchTree::new(new_value))));
+    //                     continue;
     //                 },
     //             };
     //         } else {
-    //             match Rc::clone(&node_index).borrow_mut().right.as_ref() {
+    //             match right.as_ref() {
     //                 Some(node) => {
-    //                     node_index = Rc::clone(&node);
+    //                     next_node = Rc::clone(&node);
     //                 },
     //                 None => {
-    //                     Rc::clone(&node_index).borrow_mut().right = Some(Rc::new(RefCell::new(IterativeBinarySearchTree::new(value))));
+    //                     right = &Some(Rc::new(RefCell::new(IterativeBinarySearchTree::new(new_value))));
+    //                     continue;
     //                 },
     //             };
-    //         }
+    //         };
+    //         node_index = Rc::clone(&next_node);
     //     }
     // }
 
@@ -91,14 +96,10 @@ impl IterativeBinarySearchTree {
         let mut inorder = Vec::new();
         let mut current_node = Some(Rc::new(RefCell::new(self.clone())));
         loop {
-            let stack_has_len = stack.len() != 0;
-            let some_current_node = match &current_node {
-                Some(_n) => true,
-                None => false,
+            match (stack.len() != 0, &current_node) {
+                (false, None) => break,
+                _ => (),
             };
-            if !stack_has_len && !some_current_node {
-                break;
-            }
             if let Some(node) = current_node {
                 stack.push(Rc::clone(&node));
                 if let Some(n) = node.borrow().left.as_ref() {
@@ -127,14 +128,10 @@ impl IterativeBinarySearchTree {
         let mut preorder = Vec::new();
         let mut current_node = Some(Rc::new(RefCell::new(self.clone())));
         loop {
-            let stack_has_len = stack.len() != 0;
-            let some_current_node = match &current_node {
-                Some(_n) => true,
-                None => false,
+            match (stack.len() != 0, &current_node) {
+                (false, None) => break,
+                _ => (),
             };
-            if !stack_has_len && !some_current_node {
-                break;
-            }
             if let Some(node) = current_node {
                 preorder.push(node.borrow().value);
                 stack.push(Rc::clone(&node));
@@ -165,13 +162,10 @@ impl IterativeBinarySearchTree {
         let mut current_node = Some(Rc::new(RefCell::new(self.clone())));
         loop {
             let stack_has_len = left_stack.len() != 0 || right_stack.len() != 0;
-            let some_current_node = match &current_node {
-                Some(_n) => true,
-                None => false,
+            match (stack_has_len, &current_node) {
+                (false, None) => break,
+                _ => (),
             };
-            if !stack_has_len && !some_current_node {
-                break;
-            }
             if let Some(node) = current_node {
                 if right_stack.len() != 0 {
                     right_stack.push(Rc::clone(&node));
@@ -249,10 +243,10 @@ mod tests {
 
     // #[test]
     // fn bst_insert_iteratively() {
-    //     let mut bst = IterativeBinarySearchTree::new(10);
+    //     let bst = IterativeBinarySearchTree::new(10);
     //     bst.insert_iterate(9);
     //     bst.insert_iterate(7);
     //     bst.insert_iterate(19);
-    //     assert_eq!(bst.preorder_iterate(), vec![10, 9, 7, 19]);
+    //     assert_eq!(bst.preorder(), vec![10, 9, 7, 19]);
     // }
 }
