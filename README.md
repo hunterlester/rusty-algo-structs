@@ -1,1 +1,1 @@
-Former dairy worker and sh*t shoveler, taking time to learn how to impl data structures and respective operations, and completely enjoying the process.
+Former dairy worker and sh*t shoveler, taking time to learn how to impl algorithms, data structures, and respective operations, and completely enjoying the process.
