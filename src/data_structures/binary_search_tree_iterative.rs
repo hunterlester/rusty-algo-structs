@@ -21,37 +21,54 @@ impl IterativeBinarySearchTree {
         }
     }
 
-
-    // pub fn insert_iterate(&self, new_value: i32) -> () {
-    //     let mut node_index = Rc::new(RefCell::new(self.clone()));
+    // pub fn insert_iterate(&mut self, value: i32) -> () {
+    //     let mut node_index = Rc::new(RefCell::new(*self));
+    //     println!("node_index: {:?}", &node_index);
+    //     let mut insert_left: Option<Rc<RefCell<IterativeBinarySearchTree>>> = None;
+    //     let mut insert_right: Option<Rc<RefCell<IterativeBinarySearchTree>>> = None;
+    //     let mut increment_count: bool = false;
 
     //     loop {
-    //         let IterativeBinarySearchTree { value, left, right, mut count } = &*node_index.borrow_mut();
     //         let next_node: Rc<RefCell<IterativeBinarySearchTree>>;
-    //         if new_value == *value {
-    //             count += 1;
+    //         if let Some(node) = insert_left.as_ref() {
+    //             println!("makes it here, insert_left: {:?}", &insert_left);
+    //             node_index.borrow_mut().left = insert_left;
+    //             println!("self: {:?}", self);
+    //             println!("node_index: {:?}", &node_index);
     //             break;
-    //         } else if new_value < *value {
-    //             match left.as_ref() {
+    //         } else if let Some(node) = insert_right.as_ref() {
+    //             node_index.borrow_mut().right = insert_right;
+    //             break;
+    //         } else if increment_count {
+    //             node_index.borrow_mut().count += 1;
+    //             break;
+    //         }
+    //         if value == node_index.borrow().value {
+    //             increment_count = true;
+    //             continue;
+    //         } else if value < node_index.borrow().value {
+    //             match node_index.borrow().left.as_ref() {
     //                 Some(node) => {
+    //                     println!("setting next node");
     //                     next_node = Rc::clone(&node);
     //                 },
     //                 None => {
-    //                     left = &Some(Rc::new(RefCell::new(IterativeBinarySearchTree::new(new_value))));
+    //                     insert_left = Some(Rc::new(RefCell::new(IterativeBinarySearchTree::new(value))));
     //                     continue;
     //                 },
-    //             };
+    //             }
     //         } else {
-    //             match right.as_ref() {
+    //             match node_index.borrow().right.as_ref() {
     //                 Some(node) => {
     //                     next_node = Rc::clone(&node);
     //                 },
     //                 None => {
-    //                     right = &Some(Rc::new(RefCell::new(IterativeBinarySearchTree::new(new_value))));
+    //                     insert_right = Some(Rc::new(RefCell::new(IterativeBinarySearchTree::new(value))));
     //                     continue;
     //                 },
-    //             };
-    //         };
+    //             }
+    //         }
+    //         println!("next_node: {:?}", &next_node);
     //         node_index = Rc::clone(&next_node);
     //     }
     // }
@@ -202,6 +219,29 @@ impl IterativeBinarySearchTree {
         }
         postorder
     }
+
+    pub fn bfs(&self) -> Vec<i32> {
+        let mut level_order: Vec<i32> = Vec::new();
+        let mut queue: Vec<Rc<RefCell<IterativeBinarySearchTree>>> = vec![Rc::new(RefCell::new(self.clone()))];
+        let mut level: Vec<Rc<RefCell<IterativeBinarySearchTree>>> = Vec::new();
+        loop {
+            while queue.len() != 0 {
+                let node = queue.remove(0);
+                if let Some(left_child) = node.borrow().left.as_ref() {
+                    level.push(Rc::clone(&left_child));
+                }
+                if let Some(right_child) = node.borrow().right.as_ref() {
+                    level.push(Rc::clone(&right_child));
+                }
+                level_order.push(node.borrow().value);
+            }
+            queue.append(&mut level);
+            if queue.len() == 0 && level.len() == 0 {
+                break;
+            }
+        }
+        level_order
+    }
 }
 
 #[cfg(test)]
@@ -241,12 +281,25 @@ mod tests {
         assert_eq!(bst.postorder(), vec![1, 5, 8, 7, 9, 19, 29, 10]);
     }
 
+    #[test]
+    fn level_order() {
+        let mut bst = IterativeBinarySearchTree::new(10);
+        bst.insert(29);
+        bst.insert(9);
+        bst.insert(7);
+        bst.insert(19);
+        bst.insert(5);
+        bst.insert(8);
+        bst.insert(1);
+        assert_eq!(bst.bfs(), vec![10, 9 , 29, 7, 19, 5, 8, 1]);
+    }
+
     // #[test]
     // fn bst_insert_iteratively() {
-    //     let bst = IterativeBinarySearchTree::new(10);
+    //     let mut bst = IterativeBinarySearchTree::new(10);
     //     bst.insert_iterate(9);
-    //     bst.insert_iterate(7);
-    //     bst.insert_iterate(19);
+    //     // bst.insert_iterate(7);
+    //     // bst.insert_iterate(19);
     //     assert_eq!(bst.preorder(), vec![10, 9, 7, 19]);
     // }
 }
