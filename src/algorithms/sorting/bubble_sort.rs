@@ -1,8 +1,10 @@
 /// O(n**2)
-pub fn bubble_sort(mut array: Vec<i32>) -> Vec<i32> {
+pub fn bubble_sort(array: &mut Vec<i32>) {
     let mut i: usize = 0;
     let mut swapped = false;
+    let mut iterations = 0;
     loop {
+        iterations += 1;
         if i == 0 {
             swapped = false;
         }
@@ -18,7 +20,7 @@ pub fn bubble_sort(mut array: Vec<i32>) -> Vec<i32> {
             }
         }
     }
-    array
+    println!("\n *** Bubble sort iterations: {:?}", iterations);
 }
 
 #[cfg(test)]
@@ -28,6 +30,7 @@ mod tests {
     #[test]
     fn test_bubble_sort() {
         let mut array = vec![9, 8, 7, 6, 5, 4, 3, 2, 1];
-        assert_eq!(bubble_sort(array), vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        bubble_sort(&mut array);
+        assert_eq!(array, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);
     }
 }
