@@ -3,6 +3,14 @@ use std::cell::RefCell;
 
 type PotentialNode = Option<Rc<RefCell<BinarySearchTree>>>;
 
+// for leetcode problem
+#[derive(Debug, PartialEq, Eq)]
+pub struct TreeNode {
+  pub val: i32,
+  pub left: Option<Rc<RefCell<TreeNode>>>,
+  pub right: Option<Rc<RefCell<TreeNode>>>,
+}
+
 #[derive(Debug, Clone)]
 pub struct BinarySearchTree {
     value: i32,
@@ -136,9 +144,60 @@ impl BinarySearchTree {
     }
 }
 
+fn build_bst(array: &Vec<Option<i32>>, index: usize) -> Option<Rc<RefCell<TreeNode>>> {
+    if index <= array.len() - 1 {
+        let next_left_child_index = (index*2) + 1;
+        let next_right_child_index = (index*2) + 2;
+        if let Some(value) = array[index] {
+            Some(Rc::new(RefCell::new(TreeNode {
+                val: value,
+                left: build_bst(&array, next_left_child_index),
+                right: build_bst(&array, next_right_child_index),
+            })))
+        } else {
+            None
+        }
+    } else {
+        None
+    }
+}
+
+fn search(root: Option<Rc<RefCell<TreeNode>>>, val: i32) -> Option<Rc<RefCell<TreeNode>>> {
+    if let Some(node) = root {
+        if val == node.borrow().val {
+            return Some(node);
+        }
+        if val < node.borrow().val {
+            if let Some(left_node) = node.borrow().left.as_ref() {
+                return search(Some(Rc::clone(&left_node)), val);
+            } else {
+                return None;
+            }
+        } else {
+            if let Some(right_node) = node.borrow().right.as_ref() {
+                return search(Some(Rc::clone(&right_node)), val);
+            } else {
+                return None;
+            }
+        }
+    } else {
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{BinarySearchTree};
+    use super::{BinarySearchTree, search, build_bst};
+
+    #[test]
+    fn test_search() {
+        let array = vec![Some(4), Some(2), Some(7), Some(1), Some(3)];
+        let bst = build_bst(&array, 0);
+
+        let expected_array = vec![Some(2), Some(1) , Some(3)];
+        let expected = build_bst(&expected_array, 0);
+        assert_eq!(search(bst, 2), expected);
+    }
 
     #[test]
     fn new_bst() {
