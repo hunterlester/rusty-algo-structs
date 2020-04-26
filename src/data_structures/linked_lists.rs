@@ -33,9 +33,36 @@ fn revserse_list(mut head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
     previous_node
 }
 
+fn swap_pairs(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+    if let Some(head_node) = head {
+        if let None = head_node.next {
+            return Some(head_node);
+        }
+        let mut node_1 = head_node.clone();
+        let node_2 = head_node.next;
+
+        if let Some(mut next_node) = node_2 {
+            node_1.next = swap_pairs(next_node.next);
+            next_node.next = Some(node_1);
+            return Some(next_node);
+        } else {
+            return Some(node_1);
+        }
+    } else {
+        return head;
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{ListNode, revserse_list, build_linked_list};
+    use super::{ListNode, revserse_list, build_linked_list, swap_pairs};
+
+    #[test]
+    fn test_swap_pairs() {
+        let l1 = build_linked_list(vec![1, 2, 3, 4]);
+        let expected = build_linked_list(vec![2, 1, 4, 3]);
+        assert_eq!(swap_pairs(l1), expected);
+    }
 
     #[test]
     fn test_reverse_list() {
