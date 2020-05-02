@@ -29,101 +29,61 @@ impl BinarySearchTree {
         }
     }
 
-    fn insert_left(&mut self, value: i32) -> () {
-        match self.left.as_ref() {
-            Some(node) => {
-                node.borrow_mut().insert(value);
-            },
-            None => {
-                self.left = Some(Rc::new(RefCell::new(BinarySearchTree::new(value))));
-            },
-        };
-    }
-
-    fn insert_right(&mut self, value: i32) -> () {
-        match self.right.as_ref() {
-            Some(node) => {
-                node.borrow_mut().insert(value);
-            },
-            None => {
-                self.right = Some(Rc::new(RefCell::new(BinarySearchTree::new(value))));
-            },
-        };
-    }
-
     /// Best case: O(log n), when tree is balanced
     /// Worst case: O(n) 
     pub fn insert(&mut self, value: i32) -> () {
         if value == self.value {
             self.count += 1;
         } else if value < self.value {
-            // traverse left
-            self.insert_left(value);
+            if let Some(node) = self.left.as_ref() {
+                node.borrow_mut().insert(value);
+            } else {
+                self.left = Some(Rc::new(RefCell::new(BinarySearchTree::new(value))));
+            }
         } else {
-            // traverse right
-            self.insert_right(value);
+            if let Some(node) = self.right.as_ref() {
+                node.borrow_mut().insert(value);
+            } else {
+                self.right = Some(Rc::new(RefCell::new(BinarySearchTree::new(value))));
+            }
         }
     }
 
-    fn inorder_traverse_left(&self) -> Vec<i32> {
-        if let Some(node) = self.left.as_ref() {
-            node.borrow().inorder()
-        } else {
-            vec![]
-        }
-    }
-
-    fn inorder_traverse_right(&self) -> Vec<i32> {
-        if let Some(node) = self.right.as_ref() {
-            node.borrow().inorder()
-        } else {
-            vec![]
-        }
-    }
-    
     /// Takes about twice as long to complete however, time seems to grow 10x as fast as iterative counterpart as nodes scale
     pub fn inorder(&self) -> Vec<i32> {
-        vec![self.inorder_traverse_left(), vec![self.value], self.inorder_traverse_right()].concat()
-    }
+        let left_child = if let Some(node) = self.left.as_ref() {
+            node.borrow().inorder()
+        } else {vec![]};
 
-    fn preorder_traverse_left(&self) -> Vec<i32> {
-        if let Some(node) = self.left.as_ref() {
-            node.borrow().preorder()
-        } else {
-            vec![]
-        }
-    }
+        let right_child = if let Some(node) = self.right.as_ref() {
+            node.borrow().inorder()
+        } else {vec![]};
 
-    fn preorder_traverse_right(&self) -> Vec<i32> {
-        if let Some(node) = self.right.as_ref() {
-            node.borrow().preorder()
-        } else {
-            vec![]
-        }
+        vec![left_child, vec![self.value], right_child].concat()
     }
 
     pub fn preorder(&self) -> Vec<i32> {
-        vec![vec![self.value], self.preorder_traverse_left(), self.preorder_traverse_right()].concat()
-    }
+        let left_child = if let Some(node) = self.left.as_ref() {
+            node.borrow().preorder()
+        } else {vec![]};
 
-    fn postorder_traverse_left(&self) -> Vec<i32> {
-        if let Some(node) = self.left.as_ref() {
-            node.borrow().postorder()
-        } else {
-            vec![]
-        }
-    }
+        let right_child = if let Some(node) = self.right.as_ref() {
+            node.borrow().preorder()
+        } else {vec![]};
 
-    fn postorder_traverse_right(&self) -> Vec<i32> {
-        if let Some(node) = self.right.as_ref() {
-            node.borrow().postorder()
-        } else {
-            vec![]
-        }
+        vec![vec![self.value], left_child, right_child].concat()
     }
 
     pub fn postorder(&self) -> Vec<i32> {
-        vec![self.postorder_traverse_left(), self.postorder_traverse_right(), vec![self.value]].concat()
+        let left_child = if let Some(node) = self.left.as_ref() {
+            node.borrow().postorder()
+        } else {vec![]};
+
+        let right_child = if let Some(node) = self.right.as_ref() {
+            node.borrow().postorder()
+        } else {vec![]};
+
+        vec![left_child, right_child, vec![self.value]].concat()
     }
 
     /// Best case: O(log n), when tree is balanced
@@ -164,17 +124,18 @@ fn build_bst(array: &Vec<Option<i32>>, index: usize) -> Option<Rc<RefCell<TreeNo
 
 fn search(root: Option<Rc<RefCell<TreeNode>>>, val: i32) -> Option<Rc<RefCell<TreeNode>>> {
     if let Some(node) = root {
-        if val == node.borrow().val {
-            return Some(node);
+        let inner_node = node.borrow();
+        if val == inner_node.val {
+            return Some(Rc::clone(&node));
         }
-        if val < node.borrow().val {
-            if let Some(left_node) = node.borrow().left.as_ref() {
+        if val < inner_node.val {
+            if let Some(left_node) = inner_node.left.as_ref() {
                 return search(Some(Rc::clone(&left_node)), val);
             } else {
                 return None;
             }
         } else {
-            if let Some(right_node) = node.borrow().right.as_ref() {
+            if let Some(right_node) = inner_node.right.as_ref() {
                 return search(Some(Rc::clone(&right_node)), val);
             } else {
                 return None;
