@@ -3,15 +3,7 @@ use std::cell::RefCell;
 
 type PotentialNode = Option<Rc<RefCell<BinarySearchTree>>>;
 
-// for leetcode problem
 #[derive(Debug, PartialEq, Eq)]
-pub struct TreeNode {
-  pub val: i32,
-  pub left: Option<Rc<RefCell<TreeNode>>>,
-  pub right: Option<Rc<RefCell<TreeNode>>>,
-}
-
-#[derive(Debug, Clone)]
 pub struct BinarySearchTree {
     value: i32,
     left: PotentialNode,
@@ -102,62 +94,55 @@ impl BinarySearchTree {
         }
         *self = bst;
     }
-}
 
-fn build_bst(array: &Vec<Option<i32>>, index: usize) -> Option<Rc<RefCell<TreeNode>>> {
-    if index <= array.len() - 1 {
-        let next_left_child_index = (index*2) + 1;
-        let next_right_child_index = (index*2) + 2;
-        if let Some(value) = array[index] {
-            Some(Rc::new(RefCell::new(TreeNode {
-                val: value,
-                left: build_bst(&array, next_left_child_index),
-                right: build_bst(&array, next_right_child_index),
-            })))
+    pub fn exists(&self, val: i32) -> bool {
+        if val == self.value {
+            true
+        } else if val < self.value {
+            if let Some(left_node) = self.left.as_ref() {
+                left_node.borrow().exists(val)
+            } else {
+                false
+            }
+        } else {
+            if let Some(right_node) = self.right.as_ref() {
+                right_node.borrow().exists(val)
+            } else {
+                false
+            }
+        }
+    }
+
+    pub fn build_bst(array: &Vec<Option<i32>>, index: usize) -> PotentialNode {
+        if index <= array.len() - 1 {
+            let next_left_child_index = (index*2) + 1;
+            let next_right_child_index = (index*2) + 2;
+            if let Some(value) = array[index] {
+                Some(Rc::new(RefCell::new(BinarySearchTree {
+                    value,
+                    left: BinarySearchTree::build_bst(&array, next_left_child_index),
+                    right: BinarySearchTree::build_bst(&array, next_right_child_index),
+                    count: 1,
+                })))
+            } else {
+                None
+            }
         } else {
             None
         }
-    } else {
-        None
     }
 }
 
-fn search(root: Option<Rc<RefCell<TreeNode>>>, val: i32) -> Option<Rc<RefCell<TreeNode>>> {
-    if let Some(node) = root {
-        let inner_node = node.borrow();
-        if val == inner_node.val {
-            return Some(Rc::clone(&node));
-        }
-        if val < inner_node.val {
-            if let Some(left_node) = inner_node.left.as_ref() {
-                return search(Some(Rc::clone(&left_node)), val);
-            } else {
-                return None;
-            }
-        } else {
-            if let Some(right_node) = inner_node.right.as_ref() {
-                return search(Some(Rc::clone(&right_node)), val);
-            } else {
-                return None;
-            }
-        }
-    } else {
-        None
-    }
-}
 
 #[cfg(test)]
 mod tests {
-    use super::{BinarySearchTree, search, build_bst};
+    use super::{BinarySearchTree};
 
     #[test]
-    fn test_search() {
+    fn test_exists() {
         let array = vec![Some(4), Some(2), Some(7), Some(1), Some(3)];
-        let bst = build_bst(&array, 0);
-
-        let expected_array = vec![Some(2), Some(1) , Some(3)];
-        let expected = build_bst(&expected_array, 0);
-        assert_eq!(search(bst, 2), expected);
+        let bst = BinarySearchTree::build_bst(&array, 0).unwrap();
+        assert_eq!(bst.borrow().exists(2), true);
     }
 
     #[test]
