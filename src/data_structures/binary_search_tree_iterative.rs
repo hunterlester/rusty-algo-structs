@@ -108,6 +108,22 @@ impl IterativeBinarySearchTree {
         }
     }
 
+    pub fn preorder(&self) -> Vec<i32> {
+        let mut stack: Vec<Option<Rc<RefCell<IterativeBinarySearchTree>>>> = vec![Some(Rc::new(RefCell::new(self.clone())))];
+        let mut preorder = Vec::new();
+        while let Some(Some(root)) = stack.pop() {
+            let borrowed_root = root.borrow();
+            preorder.push(borrowed_root.value);
+            if let Some(right_child) = borrowed_root.right.as_ref() {
+                stack.push(Some(Rc::clone(&right_child)));
+            }
+            if let Some(left_child) = borrowed_root.left.as_ref() {
+                stack.push(Some(Rc::clone(&left_child)));
+            }
+        }
+        preorder
+    }
+
     pub fn inorder(&self) -> Vec<i32> {
         let mut stack: Vec<Rc<RefCell<IterativeBinarySearchTree>>> = Vec::new();
         let mut inorder = Vec::new();
@@ -138,38 +154,6 @@ impl IterativeBinarySearchTree {
             }
         }
         inorder
-    }
-
-    pub fn preorder(&self) -> Vec<i32> {
-        let mut stack: Vec<Rc<RefCell<IterativeBinarySearchTree>>> = Vec::new();
-        let mut preorder = Vec::new();
-        let mut current_node = Some(Rc::new(RefCell::new(self.clone())));
-        loop {
-            match (stack.len() != 0, &current_node) {
-                (false, None) => break,
-                _ => (),
-            };
-            if let Some(node) = current_node {
-                preorder.push(node.borrow().value);
-                stack.push(Rc::clone(&node));
-                if let Some(n) = node.borrow().left.as_ref() {
-                  current_node = Some(Rc::clone(&n));
-                }  else {
-                    current_node = None;
-                }
-            } else {
-                if let Some(node) = stack.pop() {
-                    if let Some(n) = node.borrow().right.as_ref() {
-                      current_node = Some(Rc::clone(&n));
-                    }  else {
-                        current_node = None;
-                    }
-                } else {
-                    continue;
-                }
-            }
-        }
-        preorder
     }
 
     pub fn postorder(&self) -> Vec<i32> {
