@@ -109,7 +109,8 @@ impl IterativeBinarySearchTree {
     }
 
     pub fn preorder(&self) -> Vec<i32> {
-        let mut stack: Vec<Option<Rc<RefCell<IterativeBinarySearchTree>>>> = vec![Some(Rc::new(RefCell::new(self.clone())))];
+        let mut stack: Vec<Option<Rc<RefCell<IterativeBinarySearchTree>>>> = Vec::new();
+        stack.push(Some(Rc::new(RefCell::new(self.clone()))));
         let mut preorder = Vec::new();
         while let Some(Some(root)) = stack.pop() {
             let borrowed_root = root.borrow();
@@ -157,50 +158,20 @@ impl IterativeBinarySearchTree {
     }
 
     pub fn postorder(&self) -> Vec<i32> {
-        let mut left_stack: Vec<Rc<RefCell<IterativeBinarySearchTree>>> = Vec::new();
-        let mut right_stack: Vec<Rc<RefCell<IterativeBinarySearchTree>>> = Vec::new();
+        let mut stack: Vec<Option<Rc<RefCell<IterativeBinarySearchTree>>>> = Vec::new();
+        stack.push(Some(Rc::new(RefCell::new(self.clone()))));
         let mut postorder = Vec::new();
-        let mut current_node = Some(Rc::new(RefCell::new(self.clone())));
-        loop {
-            let stack_has_len = left_stack.len() != 0 || right_stack.len() != 0;
-            match (stack_has_len, &current_node) {
-                (false, None) => break,
-                _ => (),
-            };
-            if let Some(node) = current_node {
-                if right_stack.len() != 0 {
-                    right_stack.push(Rc::clone(&node));
-                } else {
-                    left_stack.push(Rc::clone(&node));
-                }
-                if let Some(n) = node.borrow().left.as_ref() {
-                  current_node = Some(Rc::clone(&n));
-                }  else {
-                    current_node = None;
-                }
-            } else {
-                let stack;
-                if right_stack.len() != 0 {
-                    stack = &mut right_stack;
-                } else {
-                    stack = &mut left_stack;
-                }
-                if let Some(node) = stack.pop() {
-                    if let Some(n) = node.borrow().right.as_ref() {
-                      right_stack.push(Rc::clone(&node));
-                      current_node = Some(Rc::clone(&n));
-                    }  else {
-                        postorder.push(node.borrow().value);
-                        while let Some(r_node) = right_stack.pop() {
-                            postorder.push(r_node.borrow().value);
-                        }
-                        current_node = None;
-                    }
-                } else {
-                    continue;
-                }
+        while let Some(Some(root)) = stack.pop() {
+            let borrowed_root = root.borrow();
+            postorder.push(borrowed_root.value);
+            if let Some(left_child) = borrowed_root.left.as_ref() {
+                stack.push(Some(Rc::clone(&left_child)));
+            }
+            if let Some(right_child) = borrowed_root.right.as_ref() {
+                stack.push(Some(Rc::clone(&right_child)));
             }
         }
+        postorder.reverse();
         postorder
     }
 
