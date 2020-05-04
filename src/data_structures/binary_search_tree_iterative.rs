@@ -3,7 +3,7 @@ use std::cell::RefCell;
 
 type PotentialNode = Option<Rc<RefCell<IterativeBinarySearchTree>>>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct IterativeBinarySearchTree {
     value: i32,
     left: PotentialNode,
@@ -126,32 +126,23 @@ impl IterativeBinarySearchTree {
     }
 
     pub fn inorder(&self) -> Vec<i32> {
-        let mut stack: Vec<Rc<RefCell<IterativeBinarySearchTree>>> = Vec::new();
-        let mut inorder = Vec::new();
+        let mut stack: Vec<Option<Rc<RefCell<IterativeBinarySearchTree>>>> = Vec::new();
         let mut current_node = Some(Rc::new(RefCell::new(self.clone())));
-        loop {
-            match (stack.len() != 0, &current_node) {
-                (false, None) => break,
-                _ => (),
-            };
-            if let Some(node) = current_node {
-                stack.push(Rc::clone(&node));
-                if let Some(n) = node.borrow().left.as_ref() {
-                  current_node = Some(Rc::clone(&n));
-                }  else {
-                    current_node = None;
-                }
-            } else {
-                if let Some(node) = stack.pop() {
-                    inorder.push(node.borrow().value);
-                    if let Some(n) = node.borrow().right.as_ref() {
-                      current_node = Some(Rc::clone(&n));
-                    }  else {
-                        current_node = None;
-                    }
-                } else {
-                    continue;
-                }
+        let mut inorder = Vec::new();
+        while current_node != None || stack.len() != 0 {
+            while let Some(node) = current_node {
+                let borrowed_node = node.borrow();
+                stack.push(Some(Rc::clone(&node)));
+                current_node = if let Some(left_child) = borrowed_node.left.as_ref() {
+                    Some(Rc::clone(&left_child))
+                } else {None};
+            }
+            if let Some(Some(node)) = stack.pop() {
+                let borrowed_node = node.borrow();
+                inorder.push(borrowed_node.value);
+                current_node = if let Some(right_child) = borrowed_node.right.as_ref() {
+                    Some(Rc::clone(&right_child))
+                } else {None};
             }
         }
         inorder
