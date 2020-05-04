@@ -69,64 +69,34 @@ impl BinaryTreeNode {
         }
     }
 
-    fn inorder_traverse_left(&self) -> Vec<i32> {
-        if let Some(Some(node)) = self.left.as_ref() {
-            node.borrow().inorder_traverse()
-        } else {
-            vec![]
-        }
-    }
-
-    fn inorder_traverse_right(&self) -> Vec<i32> {
-        if let Some(Some(node)) = self.right.as_ref() {
-            node.borrow().inorder_traverse()
-        } else {
-            vec![]
-        }
-    }
-
     pub fn inorder_traverse(&self) -> Vec<i32> {
-        vec![self.inorder_traverse_left(), vec![self.value], self.inorder_traverse_right()].concat()
-    }
-
-    fn preorder_traverse_left(&self) -> Vec<i32> {
-        if let Some(Some(node)) = self.left.as_ref() {
-            node.borrow().preorder_traverse()
-        } else {
-            vec![]
-        }
-    }
-
-    fn preorder_traverse_right(&self) -> Vec<i32> {
-        if let Some(Some(node)) = self.right.as_ref() {
-            node.borrow().preorder_traverse()
-        } else {
-            vec![]
-        }
+        let left_child = if let Some(Some(node)) = self.left.as_ref() {
+            node.borrow().inorder_traverse()
+        } else {vec![]};
+        let right_child = if let Some(Some(node)) = self.right.as_ref() {
+            node.borrow().inorder_traverse()
+        } else {vec![]};
+        vec![left_child, vec![self.value], right_child].concat()
     }
 
     pub fn preorder_traverse(&self) -> Vec<i32> {
-        vec![vec![self.value], self.preorder_traverse_left(), self.preorder_traverse_right()].concat()
-    }
-
-    fn postorder_traverse_left(&self) -> Vec<i32> {
-        if let Some(Some(node)) = self.left.as_ref() {
-            node.borrow().postorder_traverse()
-        } else {
-            vec![]
-        }
-    }
-
-    fn postorder_traverse_right(&self) -> Vec<i32> {
-        if let Some(Some(node)) = self.right.as_ref() {
-            node.borrow().postorder_traverse()
-        } else {
-            vec![]
-        }
+        let left_child = if let Some(Some(node)) = self.left.as_ref() {
+            node.borrow().preorder_traverse()
+        } else {vec![]};
+        let right_child = if let Some(Some(node)) = self.right.as_ref() {
+            node.borrow().preorder_traverse()
+        } else {vec![]};
+        vec![vec![self.value], left_child, right_child].concat()
     }
 
     pub fn postorder_traverse(&self) -> Vec<i32> {
-        vec![self.postorder_traverse_left(), self.postorder_traverse_right(), vec![self.value]].concat()
+        let left_child = if let Some(Some(node)) = self.left.as_ref() {
+            node.borrow().postorder_traverse()
+        } else {vec![]};
+        let right_child = if let Some(Some(node)) = self.right.as_ref() {
+            node.borrow().postorder_traverse()
+        } else {vec![]};
+        vec![left_child, right_child, vec![self.value]].concat()
     }
 }
 
